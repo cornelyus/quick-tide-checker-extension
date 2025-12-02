@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tide Checker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🌊 Tide Checker</h1>
+
+    <div id="location-setup" class="section">
+      <h2>Select Location</h2>
+      <div class="input-group">
+        <label for="latitude">Latitude:</label>
+        <input type="number" id="latitude" placeholder="e.g., 37.7749" step="0.0001" min="-90" max="90">
+      </div>
+      <div class="input-group">
+        <label for="longitude">Longitude:</label>
+        <input type="number" id="longitude" placeholder="e.g., -122.4194" step="0.0001" min="-180" max="180">
+      </div>
+      <button id="save-location">Save Location</button>
+    </div>
+
+    <div id="tide-info" class="section hidden">
+      <h2>Tide Information</h2>
+      <div id="location-name" class="location-display"></div>
+      <div id="tide-data" class="tide-data">
+        <div class="loading">Loading tide data...</div>
+      </div>
+      <button id="change-location" class="secondary-btn">Change Location</button>
+    </div>
+
+    <div id="error-message" class="error hidden"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
