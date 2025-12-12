@@ -1,6 +1,6 @@
-# Tide Checker Chrome Extension
+# Quick Tide Checker Chrome Extension
 
-A lightweight Chrome extension that shows current marine conditions for a user-selected location.
+A lightweight Chrome extension that shows current marine conditions for a user-selected location. SUPER EXPERIMENTAL!!
 
 ## Features
 
@@ -11,18 +11,13 @@ A lightweight Chrome extension that shows current marine conditions for a user-s
 
 ## Installation
 
-1. Add icon files to the `icons/` folder:
-   - `icon16.png` (16x16 pixels)
-   - `icon48.png` (48x48 pixels)
-   - `icon128.png` (128x128 pixels)
+1. Open Chrome and navigate to `chrome://extensions/`
 
-2. Open Chrome and navigate to `chrome://extensions/`
+2. Enable "Developer mode" (toggle in top-right corner)
 
-3. Enable "Developer mode" (toggle in top-right corner)
+3. Click "Load unpacked"
 
-4. Click "Load unpacked"
-
-5. Select the `tide-checker-extension` folder
+4. Select the `tide-checker-extension` folder
 
 ## Usage
 
