@@ -240,3 +240,14 @@ button:active {
 .input-group {
   position: relative;
 }
+
+.disclaimer {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 15px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #856404;
+}
