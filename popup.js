@@ -296,14 +296,31 @@ function displayTideData(data) {
   const nextHigh = preciseTides.find(t => t.type === 'HIGH' && new Date(t.time) > now);
   const nextLow = preciseTides.find(t => t.type === 'LOW' && new Date(t.time) > now);
 
+  // Find most recent high or low tide
+  const pastTides = preciseTides.filter(t => new Date(t.time) <= now);
+  const lastTide = pastTides.length > 0 ? pastTides[pastTides.length - 1] : null;
+
   console.log('Next high:', nextHigh);
   console.log('Next low:', nextLow);
+  console.log('Last tide:', lastTide);
+
+  // Build current tide description
+  let currentTideInfo = `Sea Level: ${currentHeight ? currentHeight.toFixed(2) + ' m' : 'N/A'}`;
+  if (lastTide) {
+    const lastTideTime = new Date(lastTide.time);
+    const formattedLastTime = lastTideTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const tideType = lastTide.type === 'HIGH' ? 'High' : 'Low';
+    currentTideInfo += `<br>Last <strong>${tideType}</strong> Tide at ${formattedLastTime}`;
+  }
 
   let html = `
     <div class="tide-item current">
       <div class="tide-label">Current Tide</div>
       <div class="tide-value">${tideStatus}</div>
-      <div class="tide-time">Sea Level: ${currentHeight ? currentHeight.toFixed(2) + ' m' : 'N/A'}</div>
+      <div class="tide-time">${currentTideInfo}</div>
     </div>
   `;
 
