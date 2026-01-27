@@ -4,11 +4,34 @@
   box-sizing: border-box;
 }
 
+/* Sunset/Warm Gradients Theme - Time-Adaptive */
 body {
   width: 350px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   color: #333;
+  transition: background 0.5s ease;
+}
+
+/* Time-based gradient backgrounds */
+body.morning {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFB4A2 50%, #FFD93D 100%);
+}
+
+body.afternoon {
+  background: linear-gradient(135deg, #4A90E2 0%, #7DC8F7 50%, #FFFFFF 100%);
+}
+
+body.evening {
+  background: linear-gradient(135deg, #5B21B6 0%, #D946EF 50%, #FB923C 100%);
+}
+
+body.night {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #94A3B8 100%);
+}
+
+/* Fallback gradient if no time class applied */
+body:not(.morning):not(.afternoon):not(.evening):not(.night) {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFB4A2 50%, #FFD93D 100%);
 }
 
 .container {
@@ -16,23 +39,28 @@ body {
 }
 
 h1 {
-  font-size: 24px;
+  font-size: 26px;
   color: white;
   margin-bottom: 20px;
   text-align: center;
+  font-weight: 600;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
 }
 
 h2 {
-  font-size: 16px;
+  font-size: 17px;
   margin-bottom: 15px;
-  color: #0891b2;
+  color: #5B21B6;
+  font-weight: 600;
 }
 
 .section {
-  background: white;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .input-group {
@@ -44,43 +72,50 @@ label {
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 5px;
-  color: #555;
+  color: #5B21B6;
 }
 
 input[type="number"],
 input[type="text"] {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 10px;
+  border: 2px solid rgba(91, 33, 182, 0.2);
+  border-radius: 8px;
   font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background: white;
 }
 
 input[type="number"]:focus,
 input[type="text"]:focus {
   outline: none;
-  border-color: #0891b2;
+  border-color: #D946EF;
+  box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1);
 }
 
 button {
   width: 100%;
-  padding: 10px;
-  background: #0891b2;
+  padding: 12px;
+  background: linear-gradient(135deg, #D946EF 0%, #FB923C 100%);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 4px 12px rgba(217, 70, 239, 0.3);
 }
 
 button:hover {
-  background: #0e7490;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(217, 70, 239, 0.4);
 }
 
 button:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
 .location-header {
@@ -92,24 +127,28 @@ button:active {
 
 .location-display {
   flex: 1;
-  background: #ecfeff;
-  padding: 10px;
-  border-radius: 5px;
+  background: linear-gradient(135deg, rgba(217, 70, 239, 0.1) 0%, rgba(251, 146, 60, 0.1) 100%);
+  padding: 12px;
+  border-radius: 8px;
   font-size: 13px;
-  color: #333;
+  color: #5B21B6;
   margin-bottom: 0;
+  font-weight: 500;
+  border: 1px solid rgba(217, 70, 239, 0.2);
 }
 
 .change-btn {
   width: auto;
-  padding: 8px 16px;
-  background: #6c757d;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%);
   font-size: 12px;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(91, 33, 182, 0.3);
 }
 
 .change-btn:hover {
-  background: #5a6268;
+  background: linear-gradient(135deg, #4C1D95 0%, #6D28D9 100%);
+  transform: translateY(-2px);
 }
 
 .tide-data {
@@ -117,38 +156,48 @@ button:active {
 }
 
 .tide-item {
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  border-left: 4px solid #0891b2;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(10px);
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border-left: 5px solid #D946EF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.tide-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .tide-item.high {
-  border-left-color: #28a745;
+  border-left-color: #FB923C;
 }
 
 .tide-item.low {
-  border-left-color: #dc3545;
+  border-left-color: #5B21B6;
 }
 
 .tide-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #666;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5B21B6;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tide-value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: #333;
-  margin: 5px 0;
+  color: #1E293B;
+  margin: 6px 0;
 }
 
 .tide-time {
   font-size: 13px;
-  color: #555;
+  color: #64748B;
+  font-weight: 500;
 }
 
 .loading {
@@ -224,17 +273,19 @@ button:active {
 
 .link-btn {
   background: none;
-  color: #0891b2;
+  color: #D946EF;
   text-decoration: underline;
   padding: 5px 0;
   font-size: 13px;
-  font-weight: normal;
+  font-weight: 500;
+  box-shadow: none;
 }
 
 .link-btn:hover {
   background: none;
-  color: #0e7490;
+  color: #5B21B6;
   transform: none;
+  box-shadow: none;
 }
 
 .input-group {
@@ -242,12 +293,13 @@ button:active {
 }
 
 .disclaimer {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 5px;
-  padding: 10px;
+  background: rgba(251, 146, 60, 0.15);
+  border: 2px solid rgba(251, 146, 60, 0.4);
+  border-radius: 10px;
+  padding: 12px;
   margin-top: 15px;
   font-size: 11px;
-  line-height: 1.5;
-  color: #856404;
+  line-height: 1.6;
+  color: #7C2D12;
+  backdrop-filter: blur(10px);
 }
