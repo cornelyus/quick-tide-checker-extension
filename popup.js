@@ -1,6 +1,10 @@
 // DOM Elements
 const locationSetup = document.getElementById('location-setup');
 const tideInfo = document.getElementById('tide-info');
+const locationSearchInput = document.getElementById('location-search');
+const searchResultsDiv = document.getElementById('search-results');
+const toggleManualBtn = document.getElementById('toggle-manual');
+const manualInputsDiv = document.getElementById('manual-inputs');
 const latitudeInput = document.getElementById('latitude');
 const longitudeInput = document.getElementById('longitude');
 const saveLocationBtn = document.getElementById('save-location');
@@ -9,16 +13,20 @@ const locationDisplay = document.getElementById('location-name');
 const tideDataDiv = document.getElementById('tide-data');
 const errorMessage = document.getElementById('error-message');
 
+// State
+let selectedLocation = null;
+let searchTimeout = null;
+
 // Initialize the extension
 init();
 
 async function init() {
   try {
-    const savedLocation = await chrome.storage.sync.get(['latitude', 'longitude']);
+    const savedLocation = await chrome.storage.sync.get(['latitude', 'longitude', 'locationName']);
 
     if (savedLocation.latitude && savedLocation.longitude) {
       // Location exists, show tide info
-      showTideInfo(savedLocation.latitude, savedLocation.longitude);
+      showTideInfo(savedLocation.latitude, savedLocation.longitude, savedLocation.locationName);
     } else {
       // No location saved, show setup
       showLocationSetup();
@@ -34,12 +42,22 @@ function showLocationSetup() {
   errorMessage.classList.add('hidden');
 }
 
-function showTideInfo(lat, lon) {
+async function showTideInfo(lat, lon, locationName) {
   locationSetup.classList.add('hidden');
   tideInfo.classList.remove('hidden');
   errorMessage.classList.add('hidden');
 
-  locationDisplay.textContent = `Location: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+  // Display location name or fetch it if not provided
+  if (locationName) {
+    locationDisplay.textContent = locationName;
+  } else {
+    locationDisplay.textContent = 'Loading location...';
+    const name = await reverseGeocode(lat, lon);
+    locationDisplay.textContent = name;
+    // Save the location name for future use
+    await chrome.storage.sync.set({ locationName: name });
+  }
+
   fetchTideData(lat, lon);
 }
 
@@ -48,24 +66,66 @@ function showError(message) {
   errorMessage.classList.remove('hidden');
 }
 
-// Save location handler
-saveLocationBtn.addEventListener('click', async () => {
-  const lat = parseFloat(latitudeInput.value);
-  const lon = parseFloat(longitudeInput.value);
+// Location search input handler
+locationSearchInput.addEventListener('input', (e) => {
+  const query = e.target.value.trim();
 
-  if (isNaN(lat) || isNaN(lon)) {
-    showError('Please enter valid latitude and longitude');
+  // Clear previous timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  if (query.length < 2) {
+    searchResultsDiv.classList.add('hidden');
     return;
   }
 
-  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-    showError('Latitude must be between -90 and 90, longitude between -180 and 180');
-    return;
+  // Debounce search
+  searchTimeout = setTimeout(() => {
+    searchLocations(query);
+  }, 300);
+});
+
+// Toggle manual coordinates
+toggleManualBtn.addEventListener('click', () => {
+  manualInputsDiv.classList.toggle('hidden');
+  if (!manualInputsDiv.classList.contains('hidden')) {
+    toggleManualBtn.textContent = 'Hide manual entry';
+  } else {
+    toggleManualBtn.textContent = 'Or enter coordinates manually';
+  }
+});
+
+// Save location handler
+saveLocationBtn.addEventListener('click', async () => {
+  let lat, lon, locationName;
+
+  // Check if a location was selected from search
+  if (selectedLocation) {
+    lat = selectedLocation.latitude;
+    lon = selectedLocation.longitude;
+    locationName = selectedLocation.name;
+  } else {
+    // Use manual coordinates
+    lat = parseFloat(latitudeInput.value);
+    lon = parseFloat(longitudeInput.value);
+
+    if (isNaN(lat) || isNaN(lon)) {
+      showError('Please search for a location or enter valid coordinates');
+      return;
+    }
+
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      showError('Latitude must be between -90 and 90, longitude between -180 and 180');
+      return;
+    }
+
+    locationName = null; // Will be fetched via reverse geocoding
   }
 
   try {
-    await chrome.storage.sync.set({ latitude: lat, longitude: lon });
-    showTideInfo(lat, lon);
+    await chrome.storage.sync.set({ latitude: lat, longitude: lon, locationName: locationName });
+    showTideInfo(lat, lon, locationName);
   } catch (error) {
     showError('Failed to save location');
   }
@@ -73,8 +133,102 @@ saveLocationBtn.addEventListener('click', async () => {
 
 // Change location handler
 changeLocationBtn.addEventListener('click', () => {
+  selectedLocation = null;
+  locationSearchInput.value = '';
+  latitudeInput.value = '';
+  longitudeInput.value = '';
+  searchResultsDiv.classList.add('hidden');
+  manualInputsDiv.classList.add('hidden');
+  toggleManualBtn.textContent = 'Or enter coordinates manually';
   showLocationSetup();
 });
+
+// Search locations using Open-Meteo Geocoding API
+async function searchLocations(query) {
+  searchResultsDiv.innerHTML = '<div class="search-loading">Searching...</div>';
+  searchResultsDiv.classList.remove('hidden');
+
+  try {
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error('Search failed');
+    }
+
+    const data = await response.json();
+
+    if (!data.results || data.results.length === 0) {
+      searchResultsDiv.innerHTML = '<div class="search-loading">No locations found</div>';
+      return;
+    }
+
+    // Display results
+    searchResultsDiv.innerHTML = '';
+    data.results.forEach(result => {
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'search-result-item';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'search-result-name';
+      nameDiv.textContent = result.name;
+
+      const detailsDiv = document.createElement('div');
+      detailsDiv.className = 'search-result-details';
+      const details = [result.admin1, result.country].filter(Boolean).join(', ');
+      detailsDiv.textContent = details;
+
+      resultDiv.appendChild(nameDiv);
+      resultDiv.appendChild(detailsDiv);
+
+      // Click handler
+      resultDiv.addEventListener('click', () => {
+        selectLocation(result);
+      });
+
+      searchResultsDiv.appendChild(resultDiv);
+    });
+  } catch (error) {
+    searchResultsDiv.innerHTML = '<div class="search-loading">Search failed. Please try again.</div>';
+  }
+}
+
+// Handle location selection from search results
+function selectLocation(result) {
+  selectedLocation = {
+    latitude: result.latitude,
+    longitude: result.longitude,
+    name: `${result.name}, ${result.country}`
+  };
+
+  locationSearchInput.value = selectedLocation.name;
+  searchResultsDiv.classList.add('hidden');
+}
+
+// Reverse geocode coordinates to location name using BigDataCloud
+async function reverseGeocode(lat, lon) {
+  try {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error('Reverse geocoding failed');
+    }
+
+    const data = await response.json();
+
+    // Build location name from available data
+    const parts = [];
+    if (data.locality) parts.push(data.locality);
+    if (data.principalSubdivision) parts.push(data.principalSubdivision);
+    if (data.countryName) parts.push(data.countryName);
+
+    return parts.length > 0 ? parts.join(', ') : `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    return `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+  }
+}
 
 // Fetch tide data from Open-Meteo Marine API
 async function fetchTideData(lat, lon) {
@@ -142,14 +296,31 @@ function displayTideData(data) {
   const nextHigh = preciseTides.find(t => t.type === 'HIGH' && new Date(t.time) > now);
   const nextLow = preciseTides.find(t => t.type === 'LOW' && new Date(t.time) > now);
 
+  // Find most recent high or low tide
+  const pastTides = preciseTides.filter(t => new Date(t.time) <= now);
+  const lastTide = pastTides.length > 0 ? pastTides[pastTides.length - 1] : null;
+
   console.log('Next high:', nextHigh);
   console.log('Next low:', nextLow);
+  console.log('Last tide:', lastTide);
+
+  // Build current tide description
+  let currentTideInfo = `Sea Level: ${currentHeight ? currentHeight.toFixed(2) + ' m' : 'N/A'}`;
+  if (lastTide) {
+    const lastTideTime = new Date(lastTide.time);
+    const formattedLastTime = lastTideTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const tideType = lastTide.type === 'HIGH' ? 'High' : 'Low';
+    currentTideInfo += `<br>Last <strong>${tideType}</strong> Tide at ${formattedLastTime}`;
+  }
 
   let html = `
     <div class="tide-item current">
       <div class="tide-label">Current Tide</div>
       <div class="tide-value">${tideStatus}</div>
-      <div class="tide-time">Sea Level: ${currentHeight ? currentHeight.toFixed(2) + ' m' : 'N/A'}</div>
+      <div class="tide-time">${currentTideInfo}</div>
     </div>
   `;
 

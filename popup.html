@@ -8,28 +8,48 @@
 </head>
 <body>
   <div class="container">
-    <h1>🌊 Tide Checker</h1>
+    <h1>Tide Checker</h1>
 
     <div id="location-setup" class="section">
       <h2>Select Location</h2>
+
+      <!-- Location Search -->
       <div class="input-group">
-        <label for="latitude">Latitude:</label>
-        <input type="number" id="latitude" placeholder="e.g., 37.7749" step="0.0001" min="-90" max="90">
+        <label for="location-search">Search Location:</label>
+        <input type="text" id="location-search" placeholder="e.g., Miami Beach, Sydney, San Francisco" autocomplete="off">
+        <div id="search-results" class="search-results hidden"></div>
       </div>
-      <div class="input-group">
-        <label for="longitude">Longitude:</label>
-        <input type="number" id="longitude" placeholder="e.g., -122.4194" step="0.0001" min="-180" max="180">
+
+      <!-- Manual Coordinates (collapsible) -->
+      <div class="manual-coordinates">
+        <button id="toggle-manual" class="link-btn">Or enter coordinates manually</button>
+        <div id="manual-inputs" class="hidden">
+          <div class="input-group">
+            <label for="latitude">Latitude:</label>
+            <input type="number" id="latitude" placeholder="e.g., 37.7749" step="0.0001" min="-90" max="90">
+          </div>
+          <div class="input-group">
+            <label for="longitude">Longitude:</label>
+            <input type="number" id="longitude" placeholder="e.g., -122.4194" step="0.0001" min="-180" max="180">
+          </div>
+        </div>
       </div>
+
       <button id="save-location">Save Location</button>
     </div>
 
     <div id="tide-info" class="section hidden">
       <h2>Tide Information</h2>
-      <div id="location-name" class="location-display"></div>
+      <div class="location-header">
+        <div id="location-name" class="location-display"></div>
+        <button id="change-location" class="change-btn">Change</button>
+      </div>
       <div id="tide-data" class="tide-data">
         <div class="loading">Loading tide data...</div>
       </div>
-      <button id="change-location" class="secondary-btn">Change Location</button>
+      <div class="disclaimer">
+        <strong>⚠️ Disclaimer:</strong> Tide data is calculated using a free API (Open-Meteo) at ~8km resolution. High and low tides are computed estimates. Coastal seabed and local geography significantly affect actual tides. This data is <strong>not suitable for coastal navigation</strong> and should not replace official nautical resources. Use with caution.
+      </div>
     </div>
 
     <div id="error-message" class="error hidden"></div>
